@@ -1,35 +1,46 @@
 package com.argha.telestore.service;
 
-import com.argha.telestore.dto.TelegramFile;
+import com.argha.telestore.dto.telegram.TelegramFile;
 import com.argha.telestore.entity.Media;
 import com.argha.telestore.entity.MediaType;
 import com.argha.telestore.entity.TelegramMedia;
 import com.argha.telestore.repository.MediaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class MediaService {
 
     private final MediaRepository mediaRepo;
     private final TelegramService telegramService;
+    private final FolderService folderService;
 
-    public MediaService(MediaRepository mediaRepo, TelegramService telegramService) {
+    public MediaService(MediaRepository mediaRepo, TelegramService telegramService, FolderService folderService) {
         this.mediaRepo = mediaRepo;
         this.telegramService = telegramService;
+        this.folderService = folderService;
     }
 
-    public Media upload(MultipartFile file) throws IOException {
+    public Media upload(MultipartFile file, String folderId) throws IOException {
 
         TelegramMedia telegramMedia = telegramService.uploadDocument(file);
+
+        if (!folderService.existFolder(folderId)) {
+            throw new RuntimeException("Folder does not exist");
+        }
 
         Media media = new Media();
 
         media.setFilename(file.getOriginalFilename());
+        media.setFolderId(folderId);
         media.setMimeType(file.getContentType());
         media.setSize(file.getSize());
         media.setExtension(getExtension(file.getOriginalFilename()));
@@ -78,6 +89,31 @@ public class MediaService {
 
         // Step 2: Download actual file
         return telegramService.downloadFile(telegramFile.getFilePath());
+    }
+
+    public void deleteFile(String id) {
+        mediaRepo.deleteById(id);
+    }
+
+    public Media updateMedia(String id, Map<String, Object> fields) {
+        Optional<Media> existingMediaOpt = mediaRepo.findById(id);
+
+        if (existingMediaOpt.isEmpty()) {
+            return null;
+        }
+
+        Media existingMedia = existingMediaOpt.get();
+
+        fields.forEach((key, value) -> {
+            Field field = ReflectionUtils.findField(Media.class, key);
+            if (field != null) {
+                field.setAccessible(true);
+                ReflectionUtils.setField(field, existingMedia, value);
+            }
+        });
+
+        Media updatedMedia = mediaRepo.save(existingMedia);
+        return updatedMedia;
     }
 
     private String getExtension(String filename) {

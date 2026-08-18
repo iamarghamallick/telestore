@@ -1,31 +1,30 @@
 package com.argha.telestore.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.time.Instant;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Instant;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Document
-public class Media {
+public class Folder {
 
     @Id
     private String id;
 
-    private String folderId = null;
-    private String filename;
-    private MediaType mediaType;
-    private String mimeType;
-    private Long size;
-    private String extension;
-    private TelegramMedia media;
+    private String name;
+
+    @Indexed
+    private String parentFolderId;
 
     @CreatedDate
     private Instant createdAt;

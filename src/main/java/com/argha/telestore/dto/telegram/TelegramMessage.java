@@ -1,4 +1,4 @@
-package com.argha.telestore.dto;
+package com.argha.telestore.dto.telegram;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

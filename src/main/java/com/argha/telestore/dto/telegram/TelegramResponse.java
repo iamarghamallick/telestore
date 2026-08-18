@@ -1,4 +1,4 @@
-package com.argha.telestore.dto;
+package com.argha.telestore.dto.telegram;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

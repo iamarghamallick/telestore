@@ -34,3 +34,6 @@ build/
 
 ### ENV ###
 .env
+
+## DEV ###
+DEV_PLAN.md

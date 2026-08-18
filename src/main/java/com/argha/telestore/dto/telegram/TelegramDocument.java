@@ -1,10 +1,10 @@
-package com.argha.telestore.dto;
+package com.argha.telestore.dto.telegram;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class TelegramFile {
+public class TelegramDocument {
 
     @JsonProperty("file_id")
     private String fileId;
@@ -15,6 +15,9 @@ public class TelegramFile {
     @JsonProperty("file_size")
     private Long fileSize;
 
-    @JsonProperty("file_path")
-    private String filePath;
+    @JsonProperty("file_name")
+    private String fileName;
+
+    @JsonProperty("mime_type")
+    private String mimeType;
 }

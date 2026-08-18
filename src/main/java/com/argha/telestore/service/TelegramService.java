@@ -1,9 +1,9 @@
 package com.argha.telestore.service;
 
-import com.argha.telestore.dto.TelegramDocument;
-import com.argha.telestore.dto.TelegramFile;
-import com.argha.telestore.dto.TelegramMessage;
-import com.argha.telestore.dto.TelegramResponse;
+import com.argha.telestore.dto.telegram.TelegramMessage;
+import com.argha.telestore.dto.telegram.TelegramDocument;
+import com.argha.telestore.dto.telegram.TelegramFile;
+import com.argha.telestore.dto.telegram.TelegramResponse;
 import com.argha.telestore.entity.TelegramMedia;
 
 import org.springframework.beans.factory.annotation.Qualifier;
