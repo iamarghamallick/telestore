@@ -4,6 +4,7 @@ import com.argha.telestore.dto.media.UpdateMediaRequest;
 import com.argha.telestore.entity.Media;
 import com.argha.telestore.service.MediaService;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/media")
@@ -30,9 +30,31 @@ public class MediaController {
         return ResponseEntity.ok(media);
     }
 
+    // @GetMapping
+    // public ResponseEntity<List<Media>> getAllMedia() {
+    // List<Media> media = mediaService.getAllMedia();
+    // return ResponseEntity.ok(media);
+    // }
+
     @GetMapping
-    public ResponseEntity<List<Media>> getAllMedia() {
-        List<Media> media = mediaService.getAllMedia();
+    public ResponseEntity<Page<Media>> getMedia(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String folderId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Page<Media> media = mediaService.searchMedia(
+                q,
+                type,
+                folderId,
+                page,
+                size,
+                sortBy,
+                sortDir);
+
         return ResponseEntity.ok(media);
     }
 
