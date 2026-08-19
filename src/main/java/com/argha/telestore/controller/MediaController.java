@@ -1,5 +1,6 @@
 package com.argha.telestore.controller;
 
+import com.argha.telestore.dto.media.UpdateMediaRequest;
 import com.argha.telestore.entity.Media;
 import com.argha.telestore.service.MediaService;
 
@@ -11,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/media")
@@ -61,8 +61,8 @@ public class MediaController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Media> updateFile(@PathVariable String id, @RequestBody Map<String, Object> fields) {
-        Media updatedMedia = mediaService.updateMedia(id, fields);
+    public ResponseEntity<Media> updateFile(@PathVariable String id, @RequestBody UpdateMediaRequest request) {
+        Media updatedMedia = mediaService.updateMedia(id, request);
         return ResponseEntity.ok(updatedMedia);
     }
 

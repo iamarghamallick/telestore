@@ -77,6 +77,6 @@ public class FolderService {
     }
 
     public boolean existFolder(String folderId) {
-        return folderRepo.existsById(folderId);
+        return folderId == null || folderRepo.existsById(folderId);
     }
 }

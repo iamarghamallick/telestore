@@ -1,19 +1,17 @@
 package com.argha.telestore.service;
 
+import com.argha.telestore.dto.media.UpdateMediaRequest;
 import com.argha.telestore.dto.telegram.TelegramFile;
 import com.argha.telestore.entity.Media;
 import com.argha.telestore.entity.MediaType;
 import com.argha.telestore.entity.TelegramMedia;
 import com.argha.telestore.repository.MediaRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -95,24 +93,28 @@ public class MediaService {
         mediaRepo.deleteById(id);
     }
 
-    public Media updateMedia(String id, Map<String, Object> fields) {
-        Optional<Media> existingMediaOpt = mediaRepo.findById(id);
+    public Media updateMedia(String id, UpdateMediaRequest request) {
+        Optional<Media> mediaOpt = mediaRepo.findById(id);
 
-        if (existingMediaOpt.isEmpty()) {
-            return null;
+        if (mediaOpt.isEmpty()) {
+            throw new RuntimeException("Media not found");
         }
 
-        Media existingMedia = existingMediaOpt.get();
+        Media media = mediaOpt.get();
 
-        fields.forEach((key, value) -> {
-            Field field = ReflectionUtils.findField(Media.class, key);
-            if (field != null) {
-                field.setAccessible(true);
-                ReflectionUtils.setField(field, existingMedia, value);
-            }
-        });
+        if (request.getFilename() != null) {
+            media.setFilename(request.getFilename().concat(".").concat(media.getExtension()));
+        }
 
-        Media updatedMedia = mediaRepo.save(existingMedia);
+        String folderId = request.getFolderId();
+        if (!folderService.existFolder(folderId)) {
+            throw new RuntimeException("Folder not found");
+        }
+
+        media.setFolderId(folderId);
+        media.setUpdatedAt(Instant.now());
+
+        Media updatedMedia = mediaRepo.save(media);
         return updatedMedia;
     }
 
