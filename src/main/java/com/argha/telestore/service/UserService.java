@@ -5,10 +5,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.argha.telestore.dto.user.UserResponse;
+import com.argha.telestore.dto.user.UpdateUserRequest;
 import com.argha.telestore.entity.User;
 import com.argha.telestore.repository.UserRepository;
-
-import io.jsonwebtoken.lang.Collections;
+import com.argha.telestore.security.CustomUserDetails;
 
 import java.util.Optional;
 
@@ -23,15 +24,50 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return new CustomUserDetails(user);
+    }
+
+    public UserResponse getMe(String userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        UserResponse userResponse = new UserResponse();
+
+        userResponse.setId(user.getId());
+        userResponse.setName(user.getName());
+        userResponse.setEmail(user.getEmail());
+        userResponse.setCreatedAt(user.getCreatedAt());
+        userResponse.setUpdatedAt(user.getUpdatedAt());
+
+        return userResponse;
+    }
+
+    public UserResponse updateUser(String email, UpdateUserRequest request) {
         Optional<User> userOpt = userRepo.findByEmail(email);
 
         if (userOpt.isEmpty()) {
-            throw new UsernameNotFoundException("User not found with email: " + email);
+            throw new RuntimeException("User not found");
         }
 
         User user = userOpt.get();
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
-                Collections.emptyList());
+        if (request.getName() != null) {
+            user.setName(request.getName());
+        }
+
+        User updatedUser = userRepo.save(user);
+
+        UserResponse userResponse = new UserResponse();
+
+        userResponse.setId(updatedUser.getId());
+        userResponse.setName(updatedUser.getName());
+        userResponse.setEmail(updatedUser.getEmail());
+        userResponse.setCreatedAt(updatedUser.getCreatedAt());
+        userResponse.setUpdatedAt(updatedUser.getUpdatedAt());
+
+        return userResponse;
     }
 }

@@ -1,14 +1,10 @@
 package com.argha.telestore.service;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Optional;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -56,7 +52,15 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
         if (authentication.isAuthenticated()) {
-            return new LoginResponse(jwtService.generateToken(request.getEmail()));
+
+            User user = userRepo.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            String token = jwtService.generateToken(
+                    user.getId(),
+                    user.getEmail());
+
+            return new LoginResponse(token);
         }
 
         throw new UsernameNotFoundException("Invalid credentials!");
