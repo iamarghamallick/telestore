@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -40,18 +39,15 @@ public class MediaService {
         this.folderService = folderService;
     }
 
-    public Media upload(MultipartFile file, String folderId) throws IOException {
+    public Media upload(String userId, MultipartFile file, String folderId) throws IOException {
 
         TelegramMedia telegramMedia = telegramService.uploadDocument(file);
 
-        if (!folderService.existFolder(folderId)) {
-            throw new RuntimeException("Folder does not exist");
-        }
-
         Media media = new Media();
 
+        media.setUserId(userId);
         media.setFilename(file.getOriginalFilename());
-        media.setFolderId(folderId);
+        media.setFolderId(folderService.existFolder(userId, folderId) ? folderId : null);
         media.setMimeType(file.getContentType());
         media.setSize(file.getSize());
         media.setExtension(getExtension(file.getOriginalFilename()));
@@ -65,18 +61,18 @@ public class MediaService {
         return media;
     }
 
-    public List<Media> getAllMedia() {
-        return mediaRepo.findAll();
+    public List<Media> getAllMedia(String userId) {
+        return mediaRepo.findAllByUserId(userId);
     }
 
-    public Media getById(String id) {
-        return mediaRepo.findById(id).orElse(null);
+    public Media getById(String userId, String id) {
+        return mediaRepo.findByUserIdAndId(userId, id).orElse(null);
     }
 
-    public byte[] download(String mediaId) {
+    public byte[] download(String userId, String mediaId) {
 
         Media media = mediaRepo
-                .findById(mediaId)
+                .findByUserIdAndId(userId, mediaId)
                 .orElseThrow(() -> new RuntimeException(
                         "Media not found"));
 
@@ -102,25 +98,20 @@ public class MediaService {
         return telegramService.downloadFile(telegramFile.getFilePath());
     }
 
-    public void deleteFile(String id) {
-        mediaRepo.deleteById(id);
+    public void deleteFile(String userId, String id) {
+        mediaRepo.deleteByUserIdAndId(userId, id);
     }
 
-    public Media updateMedia(String id, UpdateMediaRequest request) {
-        Optional<Media> mediaOpt = mediaRepo.findById(id);
-
-        if (mediaOpt.isEmpty()) {
-            throw new RuntimeException("Media not found");
-        }
-
-        Media media = mediaOpt.get();
+    public Media updateMedia(String userId, String id, UpdateMediaRequest request) {
+        Media media = mediaRepo.findByUserIdAndId(userId, id)
+                .orElseThrow(() -> new RuntimeException("Media not found"));
 
         if (request.getFilename() != null) {
             media.setFilename(request.getFilename().concat(".").concat(media.getExtension()));
         }
 
         String folderId = request.getFolderId();
-        if (!folderService.existFolder(folderId)) {
+        if (!folderService.existFolder(userId, folderId)) {
             throw new RuntimeException("Folder not found");
         }
 
@@ -132,6 +123,7 @@ public class MediaService {
     }
 
     public Page<Media> searchMedia(
+            String userId,
             String q,
             String type,
             String folderId,
@@ -141,6 +133,11 @@ public class MediaService {
             String sortDir) {
 
         Query query = new Query();
+
+        // IMPORTANT: Only get media belonging to this user
+        query.addCriteria(
+                Criteria.where("userId")
+                        .is(userId));
 
         // Search by name
         if (q != null && !q.isBlank()) {

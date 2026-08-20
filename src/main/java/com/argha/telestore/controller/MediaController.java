@@ -2,12 +2,15 @@ package com.argha.telestore.controller;
 
 import com.argha.telestore.dto.media.UpdateMediaRequest;
 import com.argha.telestore.entity.Media;
+import com.argha.telestore.security.CustomUserDetails;
 import com.argha.telestore.service.MediaService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,7 +29,12 @@ public class MediaController {
     @PostMapping("/upload")
     public ResponseEntity<Media> upload(@RequestParam("file") MultipartFile file,
             @RequestParam("folderId") String folderId) throws IOException {
-        Media media = mediaService.upload(file, folderId);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String userId = userDetails.getUserId();
+        Media media = mediaService.upload(userId, file, folderId);
         return ResponseEntity.ok(media);
     }
 
@@ -46,7 +54,13 @@ public class MediaController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String userId = userDetails.getUserId();
+
         Page<Media> media = mediaService.searchMedia(
+                userId,
                 q,
                 type,
                 folderId,
@@ -60,16 +74,26 @@ public class MediaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Media> getMedia(@PathVariable String id) {
-        Media media = mediaService.getById(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String userId = userDetails.getUserId();
+
+        Media media = mediaService.getById(userId, id);
         return ResponseEntity.ok(media);
     }
 
     @GetMapping("/{id}/download")
     public ResponseEntity<byte[]> download(@PathVariable String id) {
 
-        Media media = mediaService.getById(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        byte[] file = mediaService.download(id);
+        String userId = userDetails.getUserId();
+
+        Media media = mediaService.getById(userId, id);
+
+        byte[] file = mediaService.download(userId, id);
 
         return ResponseEntity.ok()
                 .header(
@@ -84,13 +108,25 @@ public class MediaController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<Media> updateFile(@PathVariable String id, @RequestBody UpdateMediaRequest request) {
-        Media updatedMedia = mediaService.updateMedia(id, request);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String userId = userDetails.getUserId();
+
+        Media updatedMedia = mediaService.updateMedia(userId, id, request);
         return ResponseEntity.ok(updatedMedia);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFile(@PathVariable String id) {
-        mediaService.deleteFile(id);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String userId = userDetails.getUserId();
+
+        mediaService.deleteFile(userId, id);
         return ResponseEntity.noContent().build();
     }
 }
