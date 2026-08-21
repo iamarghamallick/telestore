@@ -15,16 +15,20 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.argha.telestore.security.JwtAuthFilter;
+import com.argha.telestore.security.OAuth2LoginSuccessHandler;
 
 @Configuration
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, UserDetailsService userDetailsService) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, UserDetailsService userDetailsService,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
     @Bean
@@ -37,8 +41,10 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(
+                        auth -> auth.requestMatchers("/api/auth/register", "/api/auth/login", "/oauth2/**").permitAll()
+                                .anyRequest().authenticated())
+                .oauth2Login(oauth -> oauth.successHandler(oAuth2LoginSuccessHandler))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

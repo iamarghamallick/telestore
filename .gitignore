@@ -37,3 +37,6 @@ build/
 
 ## DEV ###
 DEV_PLAN.md
+
+## SECRET ##
+client_secret.json
