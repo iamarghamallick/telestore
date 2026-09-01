@@ -22,23 +22,23 @@ public class FolderServiceImpl implements FolderService {
 
     public Folder createFolder(String userId, CreateFolderRequest request) {
         String name = request.getName().trim();
-        String parentFoderId = request.getParentFolderId();
+        String parentFolderId = request.getParentFolderId();
 
-        if (parentFoderId != null && !parentFoderId.isBlank()) {
-            folderRepo.findByUserIdAndId(userId, parentFoderId)
+        if (parentFolderId != null && !parentFolderId.isBlank()) {
+            folderRepo.findByUserIdAndId(userId, parentFolderId)
                     .orElseThrow(() -> new RuntimeException("Parent folder not found"));
         } else {
-            parentFoderId = null;
+            parentFolderId = null;
         }
 
-        if (folderRepo.existsByUserIdAndParentFolderIdAndName(userId, request.getParentFolderId(), name)) {
+        if (folderRepo.existsByUserIdAndParentFolderIdAndName(userId, parentFolderId, name)) {
             throw new RuntimeException("A folder with this name already exists");
         }
 
         Folder folder = new Folder();
         folder.setUserId(userId);
         folder.setName(name);
-        folder.setParentFolderId(parentFoderId);
+        folder.setParentFolderId(parentFolderId);
         folder.setCreatedAt(Instant.now());
         folder.setUpdatedAt(Instant.now());
 

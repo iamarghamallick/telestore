@@ -12,6 +12,7 @@ import com.argha.telestore.repository.UserRepository;
 import com.argha.telestore.security.CustomUserDetails;
 import com.argha.telestore.service.UserService;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -58,6 +59,8 @@ public class UserServiceImpl implements UserService {
         if (request.getName() != null) {
             user.setName(request.getName());
         }
+
+        user.setUpdatedAt(Instant.now());
 
         User updatedUser = userRepo.save(user);
 

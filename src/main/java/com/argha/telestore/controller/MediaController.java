@@ -28,7 +28,7 @@ public class MediaController {
 
     @PostMapping("/upload")
     public ResponseEntity<Media> upload(@RequestParam("file") MultipartFile file,
-            @RequestParam("folderId") String folderId) throws IOException {
+            @RequestParam(value = "folderId", required = false) String folderId) throws IOException {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
