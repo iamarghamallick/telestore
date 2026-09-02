@@ -157,6 +157,9 @@ public class MediaServiceImpl implements MediaService {
         if (folderId != null && !folderId.isBlank()) {
             query.addCriteria(
                     Criteria.where("folderId").is(folderId));
+        } else {
+            query.addCriteria(
+                    Criteria.where("folderId").is(null));
         }
 
         // Total count before pagination

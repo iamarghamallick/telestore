@@ -57,19 +57,50 @@ public class FolderServiceImpl implements FolderService {
         return folderRepo.findByUserIdAndParentFolderId(userId, parentFolderId);
     }
 
-    public Folder updateFolder(String userId, String id, UpdateFolderRequest request) {
+    public Folder updateFolder(
+            String userId,
+            String id,
+            UpdateFolderRequest request) {
 
         Folder folder = getFolder(userId, id);
 
         String newName = request.getName();
+        String newParentFolderId = request.getParentFolderId();
 
-        if (!folder.getName().equals(newName)
-                && folderRepo.existsByUserIdAndParentFolderIdAndName(userId, folder.getParentFolderId(), newName)) {
-            throw new RuntimeException(
-                    "A folder with this name already exists");
+        // Validate destination
+        if (newParentFolderId != null) {
+
+            // Make sure destination belongs to this user
+            getFolder(userId, newParentFolderId);
+
+            // Prevent circular hierarchy
+            if (isDescendant(userId, folder.getId(), newParentFolderId)) {
+                throw new RuntimeException(
+                        "A folder cannot be moved inside itself or one of its descendants");
+            }
+        }
+
+        // Prevent duplicate folder names in destination
+        boolean parentChanged = !java.util.Objects.equals(
+                folder.getParentFolderId(),
+                newParentFolderId);
+
+        boolean nameChanged = !folder.getName().equals(newName);
+
+        if (nameChanged || parentChanged) {
+
+            if (folderRepo.existsByUserIdAndParentFolderIdAndName(
+                    userId,
+                    newParentFolderId,
+                    newName)) {
+
+                throw new RuntimeException(
+                        "A folder with this name already exists in the destination");
+            }
         }
 
         folder.setName(newName);
+        folder.setParentFolderId(newParentFolderId);
         folder.setUpdatedAt(Instant.now());
 
         return folderRepo.save(folder);
@@ -81,5 +112,25 @@ public class FolderServiceImpl implements FolderService {
 
     public boolean existFolder(String userId, String folderId) {
         return folderId == null || folderRepo.existsByUserIdAndId(userId, folderId);
+    }
+
+    private boolean isDescendant(
+            String userId,
+            String folderId,
+            String potentialParentId) {
+
+        String currentId = potentialParentId;
+
+        while (currentId != null) {
+
+            if (folderId.equals(currentId)) {
+                return true;
+            }
+
+            Folder current = getFolder(userId, currentId);
+            currentId = current.getParentFolderId();
+        }
+
+        return false;
     }
 }
