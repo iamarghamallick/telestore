@@ -11,6 +11,8 @@ public interface JwtService {
 
     String generateToken(String userId, String email);
 
+    String generateRefreshToken();
+
     String extractEmail(String token);
 
     String extractUserId(String token);

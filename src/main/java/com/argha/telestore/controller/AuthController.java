@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.argha.telestore.dto.auth.LoginRequest;
 import com.argha.telestore.dto.auth.LoginResponse;
+import com.argha.telestore.dto.auth.RefreshTokenRequest;
 import com.argha.telestore.dto.auth.ResgisterRequest;
 import com.argha.telestore.service.AuthService;
 
@@ -30,5 +31,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(@RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refresh(request));
     }
 }

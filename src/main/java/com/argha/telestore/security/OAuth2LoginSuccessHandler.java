@@ -2,6 +2,7 @@ package com.argha.telestore.security;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -9,7 +10,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import com.argha.telestore.entity.RefreshToken;
 import com.argha.telestore.entity.User;
+import com.argha.telestore.repository.RefreshTokenRepository;
 import com.argha.telestore.repository.UserRepository;
 import com.argha.telestore.service.JwtService;
 
@@ -23,10 +26,13 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     @Value("${oauth2.redirect-uri}")
     private String REDIRECT_URI;
 
+    private final RefreshTokenRepository refreshTokenRepo;
     private final UserRepository userRepo;
     private final JwtService jwtService;
 
-    public OAuth2LoginSuccessHandler(UserRepository userRepo, JwtService jwtService) {
+    public OAuth2LoginSuccessHandler(RefreshTokenRepository refreshTokenRepo, UserRepository userRepo,
+            JwtService jwtService) {
+        this.refreshTokenRepo = refreshTokenRepo;
         this.userRepo = userRepo;
         this.jwtService = jwtService;
     }
@@ -54,13 +60,24 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         });
 
         String token = jwtService.generateToken(user.getId(), user.getEmail());
+        String refreshTokenStr = jwtService.generateRefreshToken();
 
-        System.out.println("OAuth2 login successful!");
-        System.out.println("Email: " + email);
-        System.out.println("Name: " + name);
-        System.out.println("JWT: " + token);
+        refreshTokenRepo.deleteByUserId(user.getId());
 
-        response.sendRedirect(REDIRECT_URI + "?token=" + token);
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(refreshTokenStr);
+        refreshToken.setUserId(user.getId());
+        refreshToken.setExpiresAt(LocalDateTime.now().plusDays(7));
+        refreshToken.setRevoked(false);
+
+        RefreshToken savedRefreshToken = refreshTokenRepo.save(refreshToken);
+
+        // System.out.println("OAuth2 login successful!");
+        // System.out.println("Email: " + email);
+        // System.out.println("Name: " + name);
+        // System.out.println("JWT: " + token);
+
+        response.sendRedirect(REDIRECT_URI + "?token=" + token + "&refreshToken=" + savedRefreshToken.getToken());
 
         // response.setContentType("application/json");
         // response.getWriter().write(

@@ -3,6 +3,7 @@ package com.argha.telestore.service.impl;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
@@ -27,10 +28,16 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.jwt-expiration}")
     private long expiration;
 
+    @Override
     public String generateToken(String userId, String email) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         return createToken(claims, email);
+    }
+
+    @Override
+    public String generateRefreshToken() {
+        return UUID.randomUUID().toString();
     }
 
     private String createToken(Map<String, Object> claims, String email) {
@@ -48,18 +55,22 @@ public class JwtServiceImpl implements JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    @Override
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    @Override
     public String extractUserId(String token) {
         return extractClaim(token, claims -> claims.get("userId", String.class));
     }
 
+    @Override
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    @Override
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -77,6 +88,7 @@ public class JwtServiceImpl implements JwtService {
         return extractExpiration(token).before(new Date());
     }
 
+    @Override
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractEmail(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
