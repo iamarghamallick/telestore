@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -61,30 +62,38 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getEmail(), request.getPassword()));
+        Authentication authentication;
 
-        if (authentication.isAuthenticated()) {
-
-            String token = jwtService.generateToken(
-                    user.getId(),
-                    user.getEmail());
-            String refreshTokenStr = jwtService.generateRefreshToken();
-
-            refreshTokenRepo.deleteByUserId(user.getId());
-
-            RefreshToken refreshToken = new RefreshToken();
-            refreshToken.setToken(refreshTokenStr);
-            refreshToken.setUserId(user.getId());
-            refreshToken.setExpiresAt(LocalDateTime.now().plusDays(7));
-            refreshToken.setRevoked(false);
-
-            RefreshToken savedRefreshToken = refreshTokenRepo.save(refreshToken);
-
-            return new LoginResponse(token, savedRefreshToken.getToken());
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            user.getEmail(),
+                            request.getPassword()));
+        } catch (AuthenticationException e) {
+            throw new InvalidCredentialsException("Invalid credentials!");
         }
 
-        throw new InvalidCredentialsException("Invalid credentials!");
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new InvalidCredentialsException("Invalid credentials!");
+        }
+
+        String token = jwtService.generateToken(
+                user.getId(),
+                user.getEmail());
+
+        String refreshTokenStr = jwtService.generateRefreshToken();
+
+        refreshTokenRepo.deleteByUserId(user.getId());
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(refreshTokenStr);
+        refreshToken.setUserId(user.getId());
+        refreshToken.setExpiresAt(LocalDateTime.now().plusDays(7));
+        refreshToken.setRevoked(false);
+
+        RefreshToken savedRefreshToken = refreshTokenRepo.save(refreshToken);
+
+        return new LoginResponse(token, savedRefreshToken.getToken());
     }
 
     public LoginResponse refresh(RefreshTokenRequest request) {
