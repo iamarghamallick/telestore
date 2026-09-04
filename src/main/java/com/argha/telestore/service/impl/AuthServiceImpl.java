@@ -130,4 +130,14 @@ public class AuthServiceImpl implements AuthService {
 
         return new LoginResponse(token, newRefreshToken.getToken());
     }
+
+    public void logout(RefreshTokenRequest request) {
+        RefreshToken savedRefreshToken = refreshTokenRepo.findByToken(request.getRefreshToken()).orElseThrow(() -> {
+            return new RuntimeException("Invalid refresh token. Please login again.");
+        });
+
+        savedRefreshToken.setRevoked(true);
+
+        refreshTokenRepo.save(savedRefreshToken);
+    }
 }
