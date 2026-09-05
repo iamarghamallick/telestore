@@ -10,13 +10,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.argha.telestore.dto.auth.AuthResponse;
 import com.argha.telestore.dto.auth.LoginRequest;
-import com.argha.telestore.dto.auth.LoginResponse;
-import com.argha.telestore.dto.auth.RefreshTokenRequest;
 import com.argha.telestore.dto.auth.ResgisterRequest;
 import com.argha.telestore.entity.RefreshToken;
 import com.argha.telestore.entity.User;
 import com.argha.telestore.exception.UserNotFoundException;
+import com.argha.telestore.exception.InvalidAccessTokenException;
 import com.argha.telestore.exception.InvalidCredentialsException;
 import com.argha.telestore.exception.UserAlreadyExistsException;
 import com.argha.telestore.repository.RefreshTokenRepository;
@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
         return userRepo.save(user);
     }
 
-    public LoginResponse login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -93,12 +93,14 @@ public class AuthServiceImpl implements AuthService {
 
         RefreshToken savedRefreshToken = refreshTokenRepo.save(refreshToken);
 
-        return new LoginResponse(token, savedRefreshToken.getToken());
+        return new AuthResponse(token, savedRefreshToken.getToken());
     }
 
-    public LoginResponse refresh(RefreshTokenRequest request) {
-        RefreshToken savedRefreshToken = refreshTokenRepo.findByToken(request.getRefreshToken()).orElseThrow(() -> {
-            return new RuntimeException("Invalid refresh token. Please login again.");
+    public AuthResponse refresh(String oldRefreshToken) {
+        System.out.println("TOKEN RECEIVED FROM THE COOKIE: " + oldRefreshToken);
+
+        RefreshToken savedRefreshToken = refreshTokenRepo.findByToken(oldRefreshToken).orElseThrow(() -> {
+            return new InvalidAccessTokenException("Invalid refresh token. Please login again.");
         });
 
         if (savedRefreshToken.isRevoked()) {
@@ -128,12 +130,12 @@ public class AuthServiceImpl implements AuthService {
 
         RefreshToken newRefreshToken = refreshTokenRepo.save(refreshToken);
 
-        return new LoginResponse(token, newRefreshToken.getToken());
+        return new AuthResponse(token, newRefreshToken.getToken());
     }
 
-    public void logout(RefreshTokenRequest request) {
-        RefreshToken savedRefreshToken = refreshTokenRepo.findByToken(request.getRefreshToken()).orElseThrow(() -> {
-            return new RuntimeException("Invalid refresh token. Please login again.");
+    public void logout(String refreshToken) {
+        RefreshToken savedRefreshToken = refreshTokenRepo.findByToken(refreshToken).orElseThrow(() -> {
+            return new InvalidAccessTokenException("Invalid refresh token. Please login again.");
         });
 
         savedRefreshToken.setRevoked(true);
