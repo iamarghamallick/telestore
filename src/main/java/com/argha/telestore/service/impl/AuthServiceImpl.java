@@ -97,7 +97,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public AuthResponse refresh(String oldRefreshToken) {
-        System.out.println("TOKEN RECEIVED FROM THE COOKIE: " + oldRefreshToken);
 
         RefreshToken savedRefreshToken = refreshTokenRepo.findByToken(oldRefreshToken).orElseThrow(() -> {
             return new InvalidAccessTokenException("Invalid refresh token. Please login again.");

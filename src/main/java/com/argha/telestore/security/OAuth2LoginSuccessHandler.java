@@ -1,10 +1,13 @@
 package com.argha.telestore.security;
 
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.time.Instant;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -25,6 +28,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Value("${oauth2.redirect-uri}")
     private String REDIRECT_URI;
+
+    @Value("${app.security.cookie.secure}")
+    private boolean isCookieSecure;
+
+    @Value("${app.security.cookie.same-site}")
+    private String cookieSameSite;
 
     private final RefreshTokenRepository refreshTokenRepo;
     private final UserRepository userRepo;
@@ -72,15 +81,20 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         RefreshToken savedRefreshToken = refreshTokenRepo.save(refreshToken);
 
-        // System.out.println("OAuth2 login successful!");
-        // System.out.println("Email: " + email);
-        // System.out.println("Name: " + name);
-        // System.out.println("JWT: " + token);
+        ResponseCookie cookie = createRefreshTokenCookie(savedRefreshToken.getToken());
 
-        response.sendRedirect(REDIRECT_URI + "?token=" + token + "&refreshToken=" + savedRefreshToken.getToken());
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        // response.setContentType("application/json");
-        // response.getWriter().write(
-        // "{\"token\":\"" + token + "\"}");
+        response.sendRedirect(REDIRECT_URI);
+    }
+
+    private ResponseCookie createRefreshTokenCookie(String token) {
+        return ResponseCookie.from("refreshToken", token)
+                .httpOnly(true)
+                .secure(isCookieSecure)
+                .path("/api/auth")
+                .maxAge(7 * 24 * 60 * 60) // 7 days
+                .sameSite(cookieSameSite)
+                .build();
     }
 }

@@ -22,7 +22,6 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // Inject settings from application properties
     @Value("${app.security.cookie.secure}")
     private boolean isCookieSecure;
 
