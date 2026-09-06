@@ -9,7 +9,6 @@ import com.argha.telestore.dto.user.UpdateUserRequest;
 
 public interface UserService extends UserDetailsService {
 
-    @Override
     UserDetails loadUserByUsername(String email) throws UsernameNotFoundException;
 
     UserResponse getMe(String userId);

@@ -11,16 +11,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.argha.telestore.dto.auth.AuthResponse;
+import com.argha.telestore.dto.auth.ForgotPasswordRequest;
 import com.argha.telestore.dto.auth.LoginRequest;
 import com.argha.telestore.dto.auth.LoginResponse;
-import com.argha.telestore.dto.auth.ResgisterRequest;
+import com.argha.telestore.dto.auth.ResetPasswordRequest;
+import com.argha.telestore.dto.auth.RegisterRequest;
+import com.argha.telestore.exception.InvalidPasswordResetTokenException;
 import com.argha.telestore.service.AuthService;
+import com.argha.telestore.service.PasswordResetService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
     @Value("${app.security.cookie.secure}")
     private boolean isCookieSecure;
@@ -28,12 +33,13 @@ public class AuthController {
     @Value("${app.security.cookie.same-site}")
     private String cookieSameSite;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
         this.authService = authService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody ResgisterRequest request) {
+    public ResponseEntity<Void> register(@RequestBody RegisterRequest request) {
         authService.register(request);
         return ResponseEntity.noContent().build();
     }
@@ -74,6 +80,19 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, deleteCookie.toString()).build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        passwordResetService.forgotPassword(request.getEmail());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest request)
+            throws InvalidPasswordResetTokenException {
+        passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.noContent().build();
     }
 
     private ResponseCookie createRefreshTokenCookie(String token) {

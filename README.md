@@ -392,5 +392,3 @@ com.argha.telestore
     ├── FolderService
     └── MediaService
 ```
-
-> Note: the DTO class is named `ResgisterRequest` (typo for `RegisterRequest`) in the current codebase — flagged here for awareness in case you want to rename it for a public-facing README/consumer SDK.

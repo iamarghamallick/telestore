@@ -1,7 +1,6 @@
 package com.argha.telestore.security;
 
 import java.io.IOException;
-import java.net.HttpCookie;
 import java.time.Instant;
 import java.time.LocalDateTime;
 
@@ -68,7 +67,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             return userRepo.save(newUser);
         });
 
-        String token = jwtService.generateToken(user.getId(), user.getEmail());
         String refreshTokenStr = jwtService.generateRefreshToken();
 
         refreshTokenRepo.deleteByUserId(user.getId());

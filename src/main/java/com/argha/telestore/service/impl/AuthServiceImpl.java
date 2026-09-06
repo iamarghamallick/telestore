@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.argha.telestore.dto.auth.AuthResponse;
 import com.argha.telestore.dto.auth.LoginRequest;
-import com.argha.telestore.dto.auth.ResgisterRequest;
+import com.argha.telestore.dto.auth.RegisterRequest;
 import com.argha.telestore.entity.RefreshToken;
 import com.argha.telestore.entity.User;
 import com.argha.telestore.exception.UserNotFoundException;
@@ -42,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
         this.jwtService = jwtService;
     }
 
-    public User register(ResgisterRequest request) {
+    public User register(RegisterRequest request) {
         if (userRepo.existsByEmail(request.getEmail())) {
             throw new UserAlreadyExistsException("Email already registered");
         }
