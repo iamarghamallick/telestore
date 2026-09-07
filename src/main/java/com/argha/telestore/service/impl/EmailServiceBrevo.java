@@ -125,6 +125,93 @@ public class EmailServiceBrevo implements EmailService {
         }
     }
 
+    @Override
+    public void sendVerificationEmail(String email, String token) {
+
+        String verificationUrl = frontendUrl
+                + "/verify-email?token="
+                + token;
+
+        String html = """
+                <!DOCTYPE html>
+                <html>
+                    <body>
+                        <h2>Verify your TeleStore email</h2>
+
+                        <p>
+                            Welcome to TeleStore!
+                        </p>
+
+                        <p>
+                            Please verify your email address by clicking
+                            the button below:
+                        </p>
+
+                        <p>
+                            <a href="%s"
+                               style="
+                                   display:inline-block;
+                                   padding:12px 20px;
+                                   background:#000;
+                                   color:#fff;
+                                   text-decoration:none;
+                                   border-radius:6px;
+                               ">
+                                Verify Email
+                            </a>
+                        </p>
+
+                        <p>
+                            This verification link will expire in 24 hours.
+                        </p>
+
+                        <p>
+                            If you did not create a TeleStore account,
+                            you can safely ignore this email.
+                        </p>
+
+                        <p>
+                            Regards,<br>
+                            TeleStore Team
+                        </p>
+                    </body>
+                </html>
+                """.formatted(verificationUrl);
+
+        Map<String, Object> requestBody = Map.of(
+                "sender", Map.of(
+                        "email", from,
+                        "name", "TeleStore"),
+                "to", List.of(
+                        Map.of(
+                                "email", email)),
+                "subject", "Verify your TeleStore email",
+                "htmlContent", html);
+
+        try {
+
+            BrevoResponse response = restClient
+                    .post()
+                    .uri("/smtp/email")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(BrevoResponse.class);
+
+            System.out.println(
+                    "Verification email sent through Brevo. Message ID: "
+                            + response.messageId());
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            throw new RuntimeException(
+                    "Failed to send verification email through Brevo",
+                    e);
+        }
+    }
+
     private record BrevoResponse(String messageId) {
     }
 }

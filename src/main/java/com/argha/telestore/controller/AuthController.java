@@ -8,9 +8,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.argha.telestore.dto.ApiResponse;
@@ -20,8 +22,10 @@ import com.argha.telestore.dto.auth.LoginRequest;
 import com.argha.telestore.dto.auth.LoginResponse;
 import com.argha.telestore.dto.auth.ResetPasswordRequest;
 import com.argha.telestore.dto.auth.RegisterRequest;
+import com.argha.telestore.dto.auth.ResendVerificationRequest;
 import com.argha.telestore.exception.InvalidPasswordResetTokenException;
 import com.argha.telestore.service.AuthService;
+import com.argha.telestore.service.EmailVerificationService;
 import com.argha.telestore.service.PasswordResetService;
 
 @RestController
@@ -30,6 +34,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
+    private final EmailVerificationService emailVerificationService;
 
     @Value("${app.security.cookie.secure}")
     private boolean isCookieSecure;
@@ -37,9 +42,11 @@ public class AuthController {
     @Value("${app.security.cookie.same-site}")
     private String cookieSameSite;
 
-    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
+    public AuthController(AuthService authService, PasswordResetService passwordResetService,
+            EmailVerificationService emailVerificationService) {
         this.authService = authService;
         this.passwordResetService = passwordResetService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     @PostMapping("/register")
@@ -49,6 +56,29 @@ public class AuthController {
         ApiResponse response = new ApiResponse(201, "Registration Successful", LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<ApiResponse> verifyEmail(
+            @RequestParam String token) {
+
+        emailVerificationService.verifyEmail(token);
+
+        ApiResponse response = new ApiResponse(200, "Email verified successfully", LocalDateTime.now());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<ApiResponse> resendVerification(@RequestBody ResendVerificationRequest request) {
+
+        emailVerificationService.resendVerificationEmail(request.getEmail());
+
+        ApiResponse response = new ApiResponse(200,
+                "If an unverified account exists with this email, a verification email has been sent.",
+                LocalDateTime.now());
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")

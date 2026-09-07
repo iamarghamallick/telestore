@@ -144,6 +144,22 @@ public class GlobalExceptionHandler {
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
+        @ExceptionHandler(InvalidEmailVerificationTokenException.class)
+        public ResponseEntity<ApiResponse> handleInvalidEmailVerificationToken(
+                        InvalidEmailVerificationTokenException ex) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                                new ApiResponse(HttpStatus.BAD_REQUEST.value(),
+                                                ex.getMessage(), LocalDateTime.now()));
+        }
+
+        @ExceptionHandler(EmailNotVerifiedException.class)
+        public ResponseEntity<ApiResponse> handleEmailNotVerified(
+                        EmailNotVerifiedException ex) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                                new ApiResponse(HttpStatus.FORBIDDEN.value(),
+                                                ex.getMessage(), LocalDateTime.now()));
+        }
+
         @ExceptionHandler(Exception.class)
         public ResponseEntity<ApiResponse> handleGenericException(Exception ex) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(

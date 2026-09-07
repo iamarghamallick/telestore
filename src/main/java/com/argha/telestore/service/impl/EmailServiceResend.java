@@ -101,4 +101,10 @@ public class EmailServiceResend implements EmailService {
         }
     }
 
+    @Override
+    public void sendVerificationEmail(String email, String token) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sendVerificationEmail'");
+    }
+
 }

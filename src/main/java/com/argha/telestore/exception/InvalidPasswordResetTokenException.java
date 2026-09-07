@@ -1,6 +1,6 @@
 package com.argha.telestore.exception;
 
-public class InvalidPasswordResetTokenException extends Exception {
+public class InvalidPasswordResetTokenException extends RuntimeException {
 
     public InvalidPasswordResetTokenException(String message) {
         super(message);

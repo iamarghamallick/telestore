@@ -20,6 +20,7 @@ public class User {
 
     private String name;
     private String email;
+    private boolean emailVerified;
     private String password;
 
     @CreatedDate

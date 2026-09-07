@@ -16,12 +16,14 @@ import com.argha.telestore.dto.auth.RegisterRequest;
 import com.argha.telestore.entity.RefreshToken;
 import com.argha.telestore.entity.User;
 import com.argha.telestore.exception.UserNotFoundException;
+import com.argha.telestore.exception.EmailNotVerifiedException;
 import com.argha.telestore.exception.InvalidAccessTokenException;
 import com.argha.telestore.exception.InvalidCredentialsException;
 import com.argha.telestore.exception.UserAlreadyExistsException;
 import com.argha.telestore.repository.RefreshTokenRepository;
 import com.argha.telestore.repository.UserRepository;
 import com.argha.telestore.service.AuthService;
+import com.argha.telestore.service.EmailVerificationService;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -31,15 +33,18 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtServiceImpl jwtService;
+    private final EmailVerificationService emailVerificationService;
 
     public AuthServiceImpl(RefreshTokenRepository refreshTokenRepo, UserRepository userRepo,
             PasswordEncoder passwordEncoder,
-            AuthenticationManager authenticationManager, JwtServiceImpl jwtService) {
+            AuthenticationManager authenticationManager, JwtServiceImpl jwtService,
+            EmailVerificationService emailVerificationService) {
         this.refreshTokenRepo = refreshTokenRepo;
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     public User register(RegisterRequest request) {
@@ -51,16 +56,26 @@ public class AuthServiceImpl implements AuthService {
 
         user.setName(request.getName());
         user.setEmail(request.getEmail());
+        user.setEmailVerified(false);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
 
-        return userRepo.save(user);
+        User savedUser = userRepo.save(user);
+
+        emailVerificationService.sendVerificationEmail(savedUser.getId());
+
+        return savedUser;
     }
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (!user.isEmailVerified()) {
+            throw new EmailNotVerifiedException(
+                    "Please verify your email before logging in");
+        }
 
         Authentication authentication;
 

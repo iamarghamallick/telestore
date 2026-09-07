@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.argha.telestore.entity.RefreshToken;
 import com.argha.telestore.entity.User;
+import com.argha.telestore.repository.EmailVerificationTokenRepository;
 import com.argha.telestore.repository.RefreshTokenRepository;
 import com.argha.telestore.repository.UserRepository;
 import com.argha.telestore.service.JwtService;
@@ -37,12 +38,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final RefreshTokenRepository refreshTokenRepo;
     private final UserRepository userRepo;
     private final JwtService jwtService;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepo;
 
     public OAuth2LoginSuccessHandler(RefreshTokenRepository refreshTokenRepo, UserRepository userRepo,
-            JwtService jwtService) {
+            JwtService jwtService, EmailVerificationTokenRepository emailVerificationTokenRepo) {
         this.refreshTokenRepo = refreshTokenRepo;
         this.userRepo = userRepo;
         this.jwtService = jwtService;
+        this.emailVerificationTokenRepo = emailVerificationTokenRepo;
     }
 
     @Override
@@ -60,12 +63,21 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
             newUser.setName(name);
             newUser.setEmail(email);
+            newUser.setEmailVerified(true);
             newUser.setPassword(null);
             newUser.setCreatedAt(Instant.now());
             newUser.setUpdatedAt(Instant.now());
 
             return userRepo.save(newUser);
         });
+
+        if (!user.isEmailVerified()) {
+            user.setEmailVerified(true);
+
+            emailVerificationTokenRepo.deleteByUserId(user.getId());
+
+            userRepo.save(user);
+        }
 
         String refreshTokenStr = jwtService.generateRefreshToken();
 
