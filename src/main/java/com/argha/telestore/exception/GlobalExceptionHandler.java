@@ -15,6 +15,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import com.argha.telestore.dto.ApiResponse;
+
 import io.jsonwebtoken.ExpiredJwtException;
 
 import java.time.LocalDateTime;
@@ -23,129 +25,129 @@ import java.time.LocalDateTime;
 public class GlobalExceptionHandler {
 
         @ExceptionHandler(MethodArgumentNotValidException.class)
-        public ResponseEntity<ErrorResponse> handleValidationErrors(
+        public ResponseEntity<ApiResponse> handleValidationErrors(
                         MethodArgumentNotValidException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                                new ApiResponse(HttpStatus.BAD_REQUEST.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-        public ResponseEntity<ErrorResponse> handleConstraintViolation(
+        public ResponseEntity<ApiResponse> handleConstraintViolation(
                         MethodArgumentTypeMismatchException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                                new ApiResponse(HttpStatus.BAD_REQUEST.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(HttpMessageNotReadableException.class)
-        public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        public ResponseEntity<ApiResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                                new ApiResponse(HttpStatus.BAD_REQUEST.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(MissingServletRequestParameterException.class)
-        public ResponseEntity<ErrorResponse> handleMissingServletRequestParameter(
+        public ResponseEntity<ApiResponse> handleMissingServletRequestParameter(
                         MissingServletRequestParameterException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                                new ApiResponse(HttpStatus.BAD_REQUEST.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(MissingPathVariableException.class)
-        public ResponseEntity<ErrorResponse> handleMissingPathVariable(
+        public ResponseEntity<ApiResponse> handleMissingPathVariable(
                         MissingPathVariableException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                                new ApiResponse(HttpStatus.BAD_REQUEST.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-        public ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupported(
+        public ResponseEntity<ApiResponse> handleHttpRequestMethodNotSupported(
                         HttpRequestMethodNotSupportedException ex) {
                 return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(
-                                new ErrorResponse(HttpStatus.METHOD_NOT_ALLOWED.value(),
+                                new ApiResponse(HttpStatus.METHOD_NOT_ALLOWED.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-        public ResponseEntity<ErrorResponse> handleHttpMediaTypeNotSupported(
+        public ResponseEntity<ApiResponse> handleHttpMediaTypeNotSupported(
                         HttpMediaTypeNotSupportedException ex) {
                 return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(
-                                new ErrorResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(),
+                                new ApiResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(NoHandlerFoundException.class)
-        public ResponseEntity<ErrorResponse> handleNoHandlerFound(
+        public ResponseEntity<ApiResponse> handleNoHandlerFound(
                         NoHandlerFoundException ex) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                                new ErrorResponse(HttpStatus.NOT_FOUND.value(),
+                                new ApiResponse(HttpStatus.NOT_FOUND.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(DataIntegrityViolationException.class)
-        public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
+        public ResponseEntity<ApiResponse> handleDataIntegrityViolation(
                         DataIntegrityViolationException ex) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                                new ErrorResponse(HttpStatus.CONFLICT.value(),
+                                new ApiResponse(HttpStatus.CONFLICT.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(InvalidAccessTokenException.class)
-        public ResponseEntity<ErrorResponse> handleInvalidAccessToken(InvalidAccessTokenException ex) {
+        public ResponseEntity<ApiResponse> handleInvalidAccessToken(InvalidAccessTokenException ex) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                                new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
+                                new ApiResponse(HttpStatus.UNAUTHORIZED.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(InvalidCredentialsException.class)
-        public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+        public ResponseEntity<ApiResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                                new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
+                                new ApiResponse(HttpStatus.UNAUTHORIZED.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(UserAlreadyExistsException.class)
-        public ResponseEntity<ErrorResponse> handleUserAlreadyExists(UserAlreadyExistsException ex) {
+        public ResponseEntity<ApiResponse> handleUserAlreadyExists(UserAlreadyExistsException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                                new ApiResponse(HttpStatus.BAD_REQUEST.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(UserNotFoundException.class)
-        public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+        public ResponseEntity<ApiResponse> handleUserNotFound(UserNotFoundException ex) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                                new ErrorResponse(HttpStatus.NOT_FOUND.value(),
+                                new ApiResponse(HttpStatus.NOT_FOUND.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(MaxUploadSizeExceededException.class)
-        public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
+        public ResponseEntity<ApiResponse> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
                 return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE).body(
-                                new ErrorResponse(HttpStatus.CONTENT_TOO_LARGE.value(),
+                                new ApiResponse(HttpStatus.CONTENT_TOO_LARGE.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(ExpiredJwtException.class)
-        public ResponseEntity<ErrorResponse> handleExpiredJwt(ExpiredJwtException ex) {
+        public ResponseEntity<ApiResponse> handleExpiredJwt(ExpiredJwtException ex) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                                new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
+                                new ApiResponse(HttpStatus.UNAUTHORIZED.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(InvalidPasswordResetTokenException.class)
-        public ResponseEntity<ErrorResponse> handleInvalidPasswordResetToken(InvalidPasswordResetTokenException ex) {
+        public ResponseEntity<ApiResponse> handleInvalidPasswordResetToken(InvalidPasswordResetTokenException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                                new ApiResponse(HttpStatus.BAD_REQUEST.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 
         @ExceptionHandler(Exception.class)
-        public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        public ResponseEntity<ApiResponse> handleGenericException(Exception ex) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                                new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                                                 ex.getMessage(), LocalDateTime.now()));
         }
 }

@@ -1,7 +1,10 @@
 package com.argha.telestore.controller;
 
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.argha.telestore.dto.ApiResponse;
 import com.argha.telestore.dto.auth.AuthResponse;
 import com.argha.telestore.dto.auth.ForgotPasswordRequest;
 import com.argha.telestore.dto.auth.LoginRequest;
@@ -39,9 +43,12 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse> register(@RequestBody RegisterRequest request) {
         authService.register(request);
-        return ResponseEntity.noContent().build();
+
+        ApiResponse response = new ApiResponse(201, "Registration Successful", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
@@ -68,7 +75,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<ApiResponse> logout(
+            @CookieValue(name = "refreshToken", required = false) String refreshToken) {
         authService.logout(refreshToken);
 
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
@@ -79,20 +87,29 @@ public class AuthController {
                 .sameSite(cookieSameSite)
                 .build();
 
-        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, deleteCookie.toString()).build();
+        ApiResponse response = new ApiResponse(201, "Logged out successfully", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(response);
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<ApiResponse> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         passwordResetService.forgotPassword(request.getEmail());
-        return ResponseEntity.noContent().build();
+
+        ApiResponse response = new ApiResponse(202, "Password reset request accepted", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest request)
+    public ResponseEntity<ApiResponse> resetPassword(@RequestBody ResetPasswordRequest request)
             throws InvalidPasswordResetTokenException {
         passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
-        return ResponseEntity.noContent().build();
+
+        ApiResponse response = new ApiResponse(200, "Password reset successful", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     private ResponseCookie createRefreshTokenCookie(String token) {

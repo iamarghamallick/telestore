@@ -1,5 +1,6 @@
 package com.argha.telestore.controller;
 
+import com.argha.telestore.dto.ApiResponse;
 import com.argha.telestore.dto.media.UpdateMediaRequest;
 import com.argha.telestore.entity.Media;
 import com.argha.telestore.security.CustomUserDetails;
@@ -7,6 +8,7 @@ import com.argha.telestore.service.MediaService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/media")
@@ -119,7 +122,7 @@ public class MediaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFile(@PathVariable String id) {
+    public ResponseEntity<ApiResponse> deleteFile(@PathVariable String id) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -127,6 +130,9 @@ public class MediaController {
         String userId = userDetails.getUserId();
 
         mediaService.deleteFile(userId, id);
-        return ResponseEntity.noContent().build();
+
+        ApiResponse response = new ApiResponse(204, "File deleted successfully", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
     }
 }
