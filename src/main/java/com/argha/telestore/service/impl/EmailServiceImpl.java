@@ -1,6 +1,7 @@
 package com.argha.telestore.service.impl;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -8,18 +9,21 @@ import org.springframework.stereotype.Service;
 import com.argha.telestore.service.EmailService;
 
 @Service
+@ConditionalOnProperty(name = "email.provider", havingValue = "gmail")
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
+    private final String frontendUrl;
+    private final String from;
 
-    @Value("${frontend.host-url}")
-    private String frontendUrl;
+    public EmailServiceImpl(
+            JavaMailSender mailSender,
+            @Value("${frontend.host-url}") String frontendUrl,
+            @Value("${spring.mail.username}") String from) {
 
-    @Value("${spring.mail.username}")
-    private String from;
-
-    public EmailServiceImpl(JavaMailSender mailSender) {
         this.mailSender = mailSender;
+        this.frontendUrl = frontendUrl;
+        this.from = from;
     }
 
     @Override
