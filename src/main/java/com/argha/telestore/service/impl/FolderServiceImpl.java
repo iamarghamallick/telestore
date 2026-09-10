@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.argha.telestore.dto.folder.CreateFolderRequest;
 import com.argha.telestore.dto.folder.UpdateFolderRequest;
 import com.argha.telestore.entity.Folder;
+import com.argha.telestore.exception.FolderNotFoundException;
 import com.argha.telestore.repository.FolderRepository;
 import com.argha.telestore.service.FolderService;
 
@@ -26,7 +27,7 @@ public class FolderServiceImpl implements FolderService {
 
         if (parentFolderId != null && !parentFolderId.isBlank()) {
             folderRepo.findByUserIdAndId(userId, parentFolderId)
-                    .orElseThrow(() -> new RuntimeException("Parent folder not found"));
+                    .orElseThrow(() -> new FolderNotFoundException("Parent folder not found"));
         } else {
             parentFolderId = null;
         }
@@ -50,7 +51,8 @@ public class FolderServiceImpl implements FolderService {
     }
 
     public Folder getFolder(String userId, String id) {
-        return folderRepo.findByUserIdAndId(userId, id).orElseThrow(() -> new RuntimeException("Folder not found"));
+        return folderRepo.findByUserIdAndId(userId, id)
+                .orElseThrow(() -> new FolderNotFoundException("Folder not found"));
     }
 
     public List<Folder> getChildFolders(String userId, String parentFolderId) {

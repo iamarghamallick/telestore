@@ -4,6 +4,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,35 +17,31 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.argha.telestore.dto.ApiResponse;
+import com.argha.telestore.dto.ApiResponseCode;
 
 import io.jsonwebtoken.ExpiredJwtException;
 
-import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-        @ExceptionHandler(MethodArgumentNotValidException.class)
-        public ResponseEntity<ApiResponse> handleValidationErrors(
-                        MethodArgumentNotValidException ex) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                                new ApiResponse(HttpStatus.BAD_REQUEST.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
-        }
 
         @ExceptionHandler(MethodArgumentTypeMismatchException.class)
         public ResponseEntity<ApiResponse> handleConstraintViolation(
                         MethodArgumentTypeMismatchException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new ApiResponse(HttpStatus.BAD_REQUEST.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.INVALID_REQUEST,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(HttpMessageNotReadableException.class)
         public ResponseEntity<ApiResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new ApiResponse(HttpStatus.BAD_REQUEST.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.INVALID_REQUEST,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -52,7 +49,8 @@ public class GlobalExceptionHandler {
                         MissingServletRequestParameterException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new ApiResponse(HttpStatus.BAD_REQUEST.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.REQUIRED_FIELD_MISSING,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(MissingPathVariableException.class)
@@ -60,7 +58,8 @@ public class GlobalExceptionHandler {
                         MissingPathVariableException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new ApiResponse(HttpStatus.BAD_REQUEST.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.REQUIRED_FIELD_MISSING,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -68,7 +67,8 @@ public class GlobalExceptionHandler {
                         HttpRequestMethodNotSupportedException ex) {
                 return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(
                                 new ApiResponse(HttpStatus.METHOD_NOT_ALLOWED.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.METHOD_NOT_ALLOWED,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
@@ -76,7 +76,8 @@ public class GlobalExceptionHandler {
                         HttpMediaTypeNotSupportedException ex) {
                 return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(
                                 new ApiResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.UNSUPPORTED_MEDIA_TYPE,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(NoHandlerFoundException.class)
@@ -84,7 +85,8 @@ public class GlobalExceptionHandler {
                         NoHandlerFoundException ex) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                                 new ApiResponse(HttpStatus.NOT_FOUND.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.RESOURCE_NOT_FOUND,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(DataIntegrityViolationException.class)
@@ -92,56 +94,72 @@ public class GlobalExceptionHandler {
                         DataIntegrityViolationException ex) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(
                                 new ApiResponse(HttpStatus.CONFLICT.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.DATA_CONFLICT,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(InvalidAccessTokenException.class)
         public ResponseEntity<ApiResponse> handleInvalidAccessToken(InvalidAccessTokenException ex) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                                 new ApiResponse(HttpStatus.UNAUTHORIZED.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.TOKEN_INVALID,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(InvalidCredentialsException.class)
         public ResponseEntity<ApiResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                                 new ApiResponse(HttpStatus.UNAUTHORIZED.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.INVALID_CREDENTIALS,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(UserAlreadyExistsException.class)
         public ResponseEntity<ApiResponse> handleUserAlreadyExists(UserAlreadyExistsException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new ApiResponse(HttpStatus.BAD_REQUEST.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.USER_ALREADY_EXISTS,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(UserNotFoundException.class)
         public ResponseEntity<ApiResponse> handleUserNotFound(UserNotFoundException ex) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                                 new ApiResponse(HttpStatus.NOT_FOUND.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.USER_NOT_FOUND,
+                                                ex.getMessage()));
+        }
+
+        @ExceptionHandler(FolderNotFoundException.class)
+        public ResponseEntity<ApiResponse> handleFolderNotFound(FolderNotFoundException ex) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                                new ApiResponse(HttpStatus.NOT_FOUND.value(),
+                                                ApiResponseCode.FOLDER_NOT_FOUND,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(MaxUploadSizeExceededException.class)
         public ResponseEntity<ApiResponse> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
                 return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE).body(
                                 new ApiResponse(HttpStatus.CONTENT_TOO_LARGE.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.FILE_TOO_LARGE,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(ExpiredJwtException.class)
         public ResponseEntity<ApiResponse> handleExpiredJwt(ExpiredJwtException ex) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                                 new ApiResponse(HttpStatus.UNAUTHORIZED.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.TOKEN_EXPIRED,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(InvalidPasswordResetTokenException.class)
         public ResponseEntity<ApiResponse> handleInvalidPasswordResetToken(InvalidPasswordResetTokenException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new ApiResponse(HttpStatus.BAD_REQUEST.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.INVALID_PASSWORD_RESET_TOKEN,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(InvalidEmailVerificationTokenException.class)
@@ -149,7 +167,8 @@ public class GlobalExceptionHandler {
                         InvalidEmailVerificationTokenException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new ApiResponse(HttpStatus.BAD_REQUEST.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.INVALID_EMAIL_VERIFICATION_TOKEN,
+                                                ex.getMessage()));
         }
 
         @ExceptionHandler(EmailNotVerifiedException.class)
@@ -157,13 +176,35 @@ public class GlobalExceptionHandler {
                         EmailNotVerifiedException ex) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                                 new ApiResponse(HttpStatus.FORBIDDEN.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.EMAIL_NOT_VERIFIED,
+                                                ex.getMessage()));
+        }
+
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<ApiResponse> handleValidationException(
+                        MethodArgumentNotValidException ex) {
+
+                Map<String, String> errors = ex.getBindingResult()
+                                .getFieldErrors()
+                                .stream()
+                                .collect(Collectors.toMap(
+                                                FieldError::getField,
+                                                FieldError::getDefaultMessage,
+                                                (existing, replacement) -> existing));
+
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                                new ApiResponse(
+                                                400,
+                                                ApiResponseCode.VALIDATION_FAILED,
+                                                "Request validation failed.",
+                                                errors));
         }
 
         @ExceptionHandler(Exception.class)
         public ResponseEntity<ApiResponse> handleGenericException(Exception ex) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                                 new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                                                ex.getMessage(), LocalDateTime.now()));
+                                                ApiResponseCode.INTERNAL_SERVER_ERROR,
+                                                ex.getMessage()));
         }
 }

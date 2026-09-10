@@ -5,6 +5,7 @@ import com.argha.telestore.dto.telegram.TelegramFile;
 import com.argha.telestore.entity.Media;
 import com.argha.telestore.entity.MediaType;
 import com.argha.telestore.entity.TelegramMedia;
+import com.argha.telestore.exception.FolderNotFoundException;
 import com.argha.telestore.repository.MediaRepository;
 import com.argha.telestore.service.MediaService;
 
@@ -113,7 +114,7 @@ public class MediaServiceImpl implements MediaService {
 
         String folderId = request.getFolderId();
         if (!folderService.existFolder(userId, folderId)) {
-            throw new RuntimeException("Folder not found");
+            throw new FolderNotFoundException("Folder not found");
         }
 
         media.setFolderId(folderId);

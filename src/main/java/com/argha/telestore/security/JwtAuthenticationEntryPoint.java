@@ -8,6 +8,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
+import com.argha.telestore.dto.ApiResponseCode;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,10 +29,12 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 """
                         {
                             "status": 401,
+                            "code": "%s",
                             "message": "%s",
                             "timestamp": "%s"
                         }
                         """,
+                ApiResponseCode.UNAUTHORIZED,
                 authException.getMessage(),
                 LocalDateTime.now());
 

@@ -4,16 +4,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.argha.telestore.dto.ApiResponse;
+import com.argha.telestore.dto.ApiResponseCode;
 import com.argha.telestore.dto.folder.CreateFolderRequest;
 import com.argha.telestore.dto.folder.UpdateFolderRequest;
 import com.argha.telestore.entity.Folder;
 import com.argha.telestore.security.CustomUserDetails;
 import com.argha.telestore.service.FolderService;
 
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -36,7 +38,7 @@ public class FolderController {
     }
 
     @PostMapping
-    public ResponseEntity<Folder> createFolder(@RequestBody CreateFolderRequest request) {
+    public ResponseEntity<Folder> createFolder(@Valid @RequestBody CreateFolderRequest request) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -100,7 +102,7 @@ public class FolderController {
 
         folderService.deleteFolder(userId, id);
 
-        ApiResponse response = new ApiResponse(204, "Folder deleted successfully", LocalDateTime.now());
+        ApiResponse response = new ApiResponse(204, ApiResponseCode.SUCCESS, "Folder deleted successfully");
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
     }
