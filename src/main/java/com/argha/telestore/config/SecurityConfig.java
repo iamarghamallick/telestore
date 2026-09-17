@@ -58,6 +58,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers(
+                                        "/health-check",
                                         "/api/auth/register",
                                         "/api/auth/verify-email",
                                         "/api/auth/resend-verification",
